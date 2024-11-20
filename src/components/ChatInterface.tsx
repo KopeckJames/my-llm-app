@@ -1,19 +1,21 @@
 "use client";
-import { signOut } from "next-auth/react";
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { MessageCircle, Settings, Send, Trash2 } from 'lucide-react';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { MessageCircle, Send, Trash2 } from 'lucide-react';
+import { signOut } from "next-auth/react";
+import { SettingsDialog } from './SettingsDialog';
+import { useSettingsStore } from '@/store/settings';
+import { callLLM } from '@/services/llm';
+import type { Message } from '@/types/llm';
 
 const ChatInterface = () => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { config } = useSettingsStore();
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -26,54 +28,81 @@ const ChatInterface = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    
-    // Add user message
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
-    
-    // Clear input immediately
+    if (!input.trim() || isLoading) return;
+  
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-
-    // Simulate LLM response - replace this with your actual API call
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'This is a placeholder response. Connect your LLM backend to get real responses.' 
+    setIsLoading(true);
+  
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: config.systemPrompt || 'You are a helpful assistant.' },
+            ...messages,
+            userMessage
+          ],
+          config: {
+            provider: config.provider,
+            model: config.model,
+            temperature: config.temperature,
+            maxTokens: config.maxTokens,
+          }
+        }),
+      });
+  
+      const data = await response.json();
+      
+      if (data.error) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Error: ${data.error}`,
+        }]);
+      } else {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.content,
+        }]);
+      }
+    } catch (error: any) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Error: ${error.message || 'Something went wrong'}`,
       }]);
-    }, 1000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  
-    return (
-      <div className="flex flex-col h-screen max-w-4xl mx-auto">
-        <Card className="flex-grow flex flex-col h-full">
-          <CardHeader className="flex flex-row items-center space-x-4 pb-4">
-            <MessageCircle className="w-8 h-8" />
-            <div className="flex-1">
-              <CardTitle>Chat Interface</CardTitle>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setMessages([])}
-              title="Clear chat"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              title="Settings"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => signOut()}
-            >
-              Sign Out
-            </Button>
-          </CardHeader>
+  return (
+    <div className="flex flex-col h-screen max-w-4xl mx-auto">
+      <Card className="flex-grow flex flex-col h-full">
+        <CardHeader className="flex flex-row items-center space-x-4 pb-4">
+          <MessageCircle className="w-8 h-8" />
+          <div className="flex-1">
+            <CardTitle>Chat Interface</CardTitle>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setMessages([])}
+            title="Clear chat"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+          <SettingsDialog />
+          <Button
+            variant="ghost"
+            onClick={() => signOut()}
+          >
+            Sign Out
+          </Button>
+        </CardHeader>
         
         <CardContent className="flex-grow flex flex-col space-y-4 overflow-hidden">
           <div className="flex-grow overflow-y-auto space-y-4 p-4">
@@ -104,10 +133,11 @@ const ChatInterface = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               className="flex-grow"
+              disabled={isLoading}
             />
-            <Button type="submit">
+            <Button type="submit" disabled={isLoading}>
               <Send className="w-4 h-4 mr-2" />
-              Send
+              {isLoading ? 'Sending...' : 'Send'}
             </Button>
           </form>
         </CardContent>

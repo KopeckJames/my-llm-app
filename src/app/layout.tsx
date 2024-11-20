@@ -2,6 +2,8 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { getServerSession } from "next-auth/next";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { Navigation } from '@/components/Navigation';
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,7 +23,11 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider session={session}>
-          {children}
+          {session && <Navigation />}
+          <main className="container mx-auto py-4">
+            {children}
+          </main>
+          <Toaster />
         </AuthProvider>
       </body>
     </html>
