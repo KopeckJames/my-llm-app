@@ -20,13 +20,11 @@ export default async function RootLayout({
   const session = await getServerSession();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider session={session}>
           {session && <Navigation />}
-          <main className="container mx-auto py-4">
-            {children}
-          </main>
+          {children}
           <Toaster />
         </AuthProvider>
       </body>
