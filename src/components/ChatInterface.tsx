@@ -1,5 +1,5 @@
 "use client";
-
+import { signOut } from "next-auth/react";
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -43,30 +43,37 @@ const ChatInterface = () => {
     }, 1000);
   };
 
-  return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto">
-      <Card className="flex-grow flex flex-col h-full">
-        <CardHeader className="flex flex-row items-center space-x-4 pb-4">
-          <MessageCircle className="w-8 h-8" />
-          <div className="flex-1">
-            <CardTitle>Chat Interface</CardTitle>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setMessages([])}
-            title="Clear chat"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            title="Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
-        </CardHeader>
+  
+    return (
+      <div className="flex flex-col h-screen max-w-4xl mx-auto">
+        <Card className="flex-grow flex flex-col h-full">
+          <CardHeader className="flex flex-row items-center space-x-4 pb-4">
+            <MessageCircle className="w-8 h-8" />
+            <div className="flex-1">
+              <CardTitle>Chat Interface</CardTitle>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setMessages([])}
+              title="Clear chat"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => signOut()}
+            >
+              Sign Out
+            </Button>
+          </CardHeader>
         
         <CardContent className="flex-grow flex flex-col space-y-4 overflow-hidden">
           <div className="flex-grow overflow-y-auto space-y-4 p-4">
