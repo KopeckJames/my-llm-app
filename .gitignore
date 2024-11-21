@@ -72,3 +72,5 @@ out/
 .cache/
 .npm/
 .eslintcache
+
+.vercel

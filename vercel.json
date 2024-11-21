@@ -5,21 +5,11 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NEXTAUTH_URL": "https://${VERCEL_URL}",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "DATABASE_URL": "@database_url",
-    "GOOGLE_CLIENT_ID": "@google_client_id",
-    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
-    "OPENAI_API_KEY": "@openai_api_key"
+    "NEXTAUTH_URL": "https://${VERCEL_URL}"
   },
   "build": {
     "env": {
-      "NEXTAUTH_URL": "https://${VERCEL_URL}",
-      "NEXTAUTH_SECRET": "@nextauth_secret",
-      "DATABASE_URL": "@database_url",
-      "GOOGLE_CLIENT_ID": "@google_client_id",
-      "GOOGLE_CLIENT_SECRET": "@google_client_secret",
-      "OPENAI_API_KEY": "@openai_api_key"
+      "NEXTAUTH_URL": "https://${VERCEL_URL}"
     }
   },
   "headers": [
