@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileText, AlertCircle, CheckCircle, Download, Wand2 } from 'lucide-react';
 import type { Document } from '@/types/document';
 
 interface Analysis {
@@ -47,6 +47,9 @@ export function ResumeAnalysis() {
   const [selectedJob, setSelectedJob] = React.useState<string>('');
   const [analysis, setAnalysis] = React.useState<Analysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [isOptimizing, setIsOptimizing] = React.useState(false);
+  const [isDownloading, setIsDownloading] = React.useState(false);
+  const [optimizedResumeId, setOptimizedResumeId] = React.useState<string | null>(null);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -56,6 +59,9 @@ export function ResumeAnalysis() {
   const fetchDocuments = async () => {
     try {
       const response = await fetch('/api/documents');
+      if (!response.ok) {
+        throw new Error('Failed to fetch documents');
+      }
       const data = await response.json();
       if (data.documents) {
         setResumes(data.documents.filter((doc: Document) => doc.type === 'resume'));
@@ -93,10 +99,14 @@ export function ResumeAnalysis() {
         }),
       });
 
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to analyze resume');
+      }
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      
       setAnalysis(data);
+      setOptimizedResumeId(null); // Reset optimized resume when new analysis is done
       toast({
         title: "Analysis Complete",
         description: `Resume score: ${data.score}%`,
@@ -109,6 +119,95 @@ export function ResumeAnalysis() {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const generateOptimizedResume = async () => {
+    if (!analysis || !selectedResume || !selectedJob) return;
+
+    setIsOptimizing(true);
+    try {
+      const response = await fetch('/api/analysis/resume/optimize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeId: selectedResume,
+          jobDescriptionId: selectedJob,
+          analysis,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate optimized resume');
+      }
+
+      const data = await response.json();
+      setOptimizedResumeId(data.document.id);
+      toast({
+        title: "Success",
+        description: "Optimized resume has been created",
+      });
+
+      // Refresh the documents list to show the new optimized resume
+      fetchDocuments();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate optimized resume",
+        variant: "destructive",
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const downloadOptimizedResume = async () => {
+    if (!optimizedResumeId) return;
+
+    setIsDownloading(true);
+    try {
+      const response = await fetch(`/api/documents/${optimizedResumeId}`);
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to download resume');
+      }
+
+      const data = await response.json();
+      if (!data.document || !data.document.content) {
+        throw new Error('Invalid document data received');
+      }
+
+      // Create a blob from the resume content
+      const blob = new Blob([data.document.content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.document.name}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "Resume downloaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to download resume",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -167,14 +266,38 @@ export function ResumeAnalysis() {
       {analysis && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {analysis.score >= 90 ? (
-                <CheckCircle className="text-green-500" />
-              ) : (
-                <AlertCircle className="text-yellow-500" />
-              )}
-              Analysis Results
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                {analysis.score >= 90 ? (
+                  <CheckCircle className="text-green-500" />
+                ) : (
+                  <AlertCircle className="text-yellow-500" />
+                )}
+                <CardTitle>Analysis Results</CardTitle>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={generateOptimizedResume}
+                  disabled={isOptimizing}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Wand2 className="h-4 w-4" />
+                  {isOptimizing ? 'Generating...' : 'Generate Optimized Resume'}
+                </Button>
+                {optimizedResumeId && (
+                  <Button
+                    onClick={downloadOptimizedResume}
+                    disabled={isDownloading}
+                    variant="secondary"
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {isDownloading ? 'Downloading...' : 'Download Optimized Resume'}
+                  </Button>
+                )}
+              </div>
+            </div>
             <CardDescription>
               Overall ATS Score: {analysis.score}%
             </CardDescription>
