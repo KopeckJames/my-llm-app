@@ -2,9 +2,9 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { getServerSession } from "next-auth/next";
 import { AuthProvider } from "@/components/providers/auth-provider";
-import { Navigation } from '@/components/Navigation';
+import { Navigation } from "@/components/Navigation";
 import { Toaster } from "@/components/ui/toaster";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 
 const inter = Inter({ subsets: ['latin'] });
 
