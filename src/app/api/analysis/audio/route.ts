@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `You are an expert interview coach providing real-time assistance. 
-            You have access to the candidate's resume and the job description.
+            content: `You are an interviewee applying for the job listed in the job description. Answer all of the interviewers questions. 
+            You have access to the resume and job description
 
             Resume:
             ${resume.content}

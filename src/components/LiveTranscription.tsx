@@ -19,6 +19,7 @@ export default function LiveTranscription() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedResume, setSelectedResume] = useState<string>("");
   const [selectedJob, setSelectedJob] = useState<string>("");
+  const [questions, setQuestions] = useState<string[]>([]);
 
   const recognitionRef = useRef<any>(null);
   const transcriptionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -126,6 +127,7 @@ export default function LiveTranscription() {
       setTranscriptionComplete(false);
       setTranscriptionText("");
       setResponse("");
+      setQuestions([]);
 
       recognitionRef.current = new window.webkitSpeechRecognition();
       recognitionRef.current.continuous = true;
@@ -146,7 +148,9 @@ export default function LiveTranscription() {
 
         // Set new timeout to process after speech pause
         transcriptionTimeoutRef.current = setTimeout(() => {
-          processTranscription(transcript);
+          const newQuestions = transcript.split(/(?<=[?.!])\s+/); // Split by sentence-ending punctuation
+          setQuestions(newQuestions);
+          processTranscription(newQuestions[newQuestions.length - 1]); // Process only the last question
         }, 1000);
       };
 
@@ -181,7 +185,9 @@ export default function LiveTranscription() {
 
       // Process final transcription
       if (transcriptionText) {
-        processTranscription(transcriptionText);
+        const newQuestions = transcriptionText.split(/(?<=[?.!])\s+/);
+        setQuestions(newQuestions);
+        processTranscription(newQuestions[newQuestions.length - 1]);
       }
     }
   };

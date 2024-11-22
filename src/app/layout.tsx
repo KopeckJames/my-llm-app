@@ -53,9 +53,9 @@ export default function RootLayout({
                   </a>
                   <a
                     className="text-foreground/60 transition-colors hover:text-foreground/80"
-                    href="/settings"
+                    href="/analysis"
                   >
-                    Settings
+                    Resume Analysis
                   </a>
                 </nav>
               </div>
