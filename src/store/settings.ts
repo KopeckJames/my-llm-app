@@ -1,29 +1,21 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { ChatConfig } from '@/types/llm';
+import type { LLMConfig } from '@/types/llm';
 
-interface SettingsStore {
-  config: ChatConfig;
-  updateConfig: (config: Partial<ChatConfig>) => void;
+interface SettingsState {
+  config: LLMConfig;
+  updateConfig: (config: Partial<LLMConfig>) => void;
 }
 
-export const useSettingsStore = create<SettingsStore>()(
-  persist(
-    (set) => ({
-      config: {
-        provider: 'anthropic',
-        model: 'claude-3-opus-20240229',
-        temperature: 0.7,
-        maxTokens: 1000,
-        systemPrompt: 'You are a helpful assistant.',
-      },
-      updateConfig: (newConfig) =>
-        set((state) => ({
-          config: { ...state.config, ...newConfig },
-        })),
-    }),
-    {
-      name: 'chat-settings',
-    }
-  )
-);
+export const useSettingsStore = create<SettingsState>((set) => ({
+  config: {
+    provider: 'openai',
+    model: 'gpt-3.5-turbo',
+    temperature: 0.7,
+    maxTokens: 1000,
+    systemPrompt: 'You are a helpful assistant.',
+  },
+  updateConfig: (newConfig) =>
+    set((state) => ({
+      config: { ...state.config, ...newConfig },
+    })),
+}));

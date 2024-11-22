@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { MessageCircle, Send, Trash2 } from 'lucide-react';
 import { signOut } from "next-auth/react";
-import { SettingsDialog } from './SettingsDialog';
+import { SettingsDialog } from '@/components/SettingsDialog';
 import { useSettingsStore } from '@/store/settings';
 import { callLLM } from '@/services/llm';
 import type { Message } from '@/types/llm';
@@ -30,7 +30,7 @@ const ChatInterface = () => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
   
-    const userMessage = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -43,7 +43,7 @@ const ChatInterface = () => {
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: config.systemPrompt || 'You are a helpful assistant.' },
+            { role: 'system' as const, content: config.systemPrompt || 'You are a helpful assistant.' },
             ...messages,
             userMessage
           ],
@@ -60,18 +60,18 @@ const ChatInterface = () => {
       
       if (data.error) {
         setMessages(prev => [...prev, {
-          role: 'assistant',
+          role: 'assistant' as const,
           content: `Error: ${data.error}`,
         }]);
       } else {
         setMessages(prev => [...prev, {
-          role: 'assistant',
+          role: 'assistant' as const,
           content: data.content,
         }]);
       }
     } catch (error: any) {
       setMessages(prev => [...prev, {
-        role: 'assistant',
+        role: 'assistant' as const,
         content: `Error: ${error.message || 'Something went wrong'}`,
       }]);
     } finally {
@@ -89,7 +89,7 @@ const ChatInterface = () => {
           </div>
           <Button 
             variant="ghost" 
-            size="icon"
+            size="sm"
             onClick={() => setMessages([])}
             title="Clear chat"
           >
@@ -98,6 +98,7 @@ const ChatInterface = () => {
           <SettingsDialog />
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => signOut()}
           >
             Sign Out

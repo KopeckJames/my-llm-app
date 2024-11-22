@@ -15,6 +15,7 @@ import { Settings, Loader2 } from 'lucide-react';
 import { useSettingsStore } from '@/store/settings';
 import { OllamaStatus } from './OllamaStatus';
 import { checkModelAvailability, getInstalledModels } from '@/utils/ollama';
+import type { LLMConfig } from '@/types/llm';
 
 export function SettingsDialog() {
   const { config, updateConfig } = useSettingsStore();
@@ -34,7 +35,7 @@ export function SettingsDialog() {
     setInstalledModels(models.map(m => m.name));
   };
 
-  const handleProviderChange = async (provider: string) => {
+  const handleProviderChange = async (provider: LLMConfig['provider']) => {
     setLocalConfig({ ...localConfig, provider });
     updateConfig({ provider });
     setModelError(null);
@@ -64,7 +65,7 @@ export function SettingsDialog() {
     }
   };
 
-  function getModelOptions(provider: string) {
+  function getModelOptions(provider: LLMConfig['provider']) {
     switch (provider) {
       case 'ollama':
         return installedModels.length > 0 ? installedModels : [
@@ -94,7 +95,7 @@ export function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="sm">
           <Settings className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -111,7 +112,7 @@ export function SettingsDialog() {
             <select
               id="provider"
               value={localConfig.provider}
-              onChange={(e) => handleProviderChange(e.target.value)}
+              onChange={(e) => handleProviderChange(e.target.value as LLMConfig['provider'])}
               className="w-full p-2 border rounded"
             >
               <option value="anthropic">Anthropic</option>
