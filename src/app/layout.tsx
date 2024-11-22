@@ -1,11 +1,12 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "../components/ui/toaster";
+import { SignOutButton } from "../components/SignOutButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Interview Coach",
+  title: "Cogntools",
   description: "AI-powered interview practice and feedback",
 };
 
@@ -19,7 +20,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
+            <div className="container flex h-14 items-center justify-between">
               <div className="mr-4 flex">
                 <a className="mr-6 flex items-center space-x-2" href="/">
                   <svg
@@ -35,7 +36,7 @@ export default function RootLayout({
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                   <span className="hidden font-bold sm:inline-block">
-                    Interview Coach
+                    CognTools
                   </span>
                 </a>
                 <nav className="flex items-center space-x-6 text-sm font-medium">
@@ -53,12 +54,13 @@ export default function RootLayout({
                   </a>
                   <a
                     className="text-foreground/60 transition-colors hover:text-foreground/80"
-                    href="/settings"
+                    href="/analysis"
                   >
-                    Settings
+                    Analysis
                   </a>
                 </nav>
               </div>
+              <SignOutButton />
             </div>
           </header>
           <main className="flex-1">{children}</main>
