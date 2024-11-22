@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { toast } from "./ui/use-toast";
+import { DocumentSelect } from "./DocumentSelect";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 declare global {
   interface Window {
@@ -15,6 +17,8 @@ export default function LiveTranscription() {
   const [transcriptionText, setTranscriptionText] = useState("");
   const [response, setResponse] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedResume, setSelectedResume] = useState<string>("");
+  const [selectedJob, setSelectedJob] = useState<string>("");
 
   const recognitionRef = useRef<any>(null);
   const transcriptionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,6 +27,15 @@ export default function LiveTranscription() {
   // Function to process transcription with streaming LLM
   const processTranscription = async (text: string) => {
     if (!text.trim() || isProcessing) return;
+
+    if (!selectedResume || !selectedJob) {
+      toast({
+        title: "Missing Documents",
+        description: "Please select both a resume and job description",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -38,6 +51,8 @@ export default function LiveTranscription() {
       
       const formData = new FormData();
       formData.append('lastTranscription', text);
+      formData.append('resumeId', selectedResume);
+      formData.append('jobId', selectedJob);
       
       const response = await fetch('/api/analysis/audio', {
         method: 'POST',
@@ -97,6 +112,15 @@ export default function LiveTranscription() {
   };
 
   const startTranscription = () => {
+    if (!selectedResume || !selectedJob) {
+      toast({
+        title: "Missing Documents",
+        description: "Please select both a resume and job description before starting",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setIsTranscribing(true);
       setTranscriptionComplete(false);
@@ -186,78 +210,100 @@ export default function LiveTranscription() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full p-4">
-      <div className="w-full max-w-2xl space-y-4">
-        {(isTranscribing || transcriptionText) && (
-          <div className="rounded-lg border bg-card p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">
-                  {transcriptionComplete ? "Transcription Complete" : "Transcribing"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {transcriptionComplete ? "Thanks for speaking." : "Speak now..."}
-                </p>
-              </div>
-              {isTranscribing && (
-                <div className="rounded-full w-4 h-4 bg-red-400 animate-pulse" />
-              )}
-            </div>
+    <div className="flex flex-col items-center w-full max-w-6xl mx-auto p-4 space-y-6">
+      {/* Document Selection */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Interview Documents</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4">
+          <DocumentSelect 
+            type="resume" 
+            onSelect={setSelectedResume} 
+          />
+          <DocumentSelect 
+            type="jobDescription" 
+            onSelect={setSelectedJob} 
+          />
+        </CardContent>
+      </Card>
 
-            {transcriptionText && (
-              <div className="border rounded-lg p-4 bg-muted">
-                <p className="text-sm whitespace-pre-wrap">{transcriptionText}</p>
-              </div>
-            )}
-
-            {(response || isProcessing) && (
-              <div className="border rounded-lg p-4 bg-primary/5">
-                {isProcessing && !response && (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    <p className="text-sm text-muted-foreground">Thinking...</p>
-                  </div>
-                )}
-                {response && (
-                  <p className="text-sm whitespace-pre-wrap">{response}</p>
+      {/* Main Content */}
+      <div className="grid grid-cols-2 gap-4 w-full">
+        {/* Transcription Box */}
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>
+              <div className="flex justify-between items-center">
+                <span>Your Speech</span>
+                {isTranscribing && (
+                  <div className="rounded-full w-3 h-3 bg-red-400 animate-pulse" />
                 )}
               </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex justify-center">
-          <button
-            onClick={handleToggleTranscription}
-            className={`flex items-center justify-center rounded-full w-20 h-20 focus:outline-none transition-colors ${
-              isTranscribing 
-                ? "bg-red-400 hover:bg-red-500" 
-                : "bg-blue-400 hover:bg-blue-500"
-            }`}
-            disabled={isProcessing}
-          >
-            {isTranscribing ? (
-              <svg
-                className="h-12 w-12"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path fill="white" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {transcriptionText ? (
+              <p className="whitespace-pre-wrap">{transcriptionText}</p>
             ) : (
-              <svg
-                viewBox="0 0 256 256"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-12 h-12 text-white"
-              >
-                <path
-                  fill="currentColor"
-                  d="M128 176a48.05 48.05 0 0 0 48-48V64a48 48 0 0 0-96 0v64a48.05 48.05 0 0 0 48 48ZM96 64a32 32 0 0 1 64 0v64a32 32 0 0 1-64 0Zm40 143.6V232a8 8 0 0 1-16 0v-24.4A80.11 80.11 0 0 1 48 128a8 8 0 0 1 16 0a64 64 0 0 0 128 0a8 8 0 0 1 16 0a80.11 80.11 0 0 1-72 79.6Z"
-                />
-              </svg>
+              <p className="text-muted-foreground italic">
+                {isTranscribing ? "Speak now..." : "Click the microphone to start"}
+              </p>
             )}
-          </button>
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* Response Box */}
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>AI Coach Response</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isProcessing && !response && (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <p className="text-muted-foreground">Thinking...</p>
+              </div>
+            )}
+            {response && (
+              <p className="whitespace-pre-wrap">{response}</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Microphone Button */}
+      <div className="flex justify-center pt-4">
+        <button
+          onClick={handleToggleTranscription}
+          className={`flex items-center justify-center rounded-full w-20 h-20 focus:outline-none transition-colors ${
+            isTranscribing 
+              ? "bg-red-400 hover:bg-red-500" 
+              : "bg-blue-400 hover:bg-blue-500"
+          }`}
+          disabled={isProcessing}
+        >
+          {isTranscribing ? (
+            <svg
+              className="h-12 w-12"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path fill="white" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            <svg
+              viewBox="0 0 256 256"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-12 h-12 text-white"
+            >
+              <path
+                fill="currentColor"
+                d="M128 176a48.05 48.05 0 0 0 48-48V64a48 48 0 0 0-96 0v64a48.05 48.05 0 0 0 48 48ZM96 64a32 32 0 0 1 64 0v64a32 32 0 0 1-64 0Zm40 143.6V232a8 8 0 0 1-16 0v-24.4A80.11 80.11 0 0 1 48 128a8 8 0 0 1 16 0a64 64 0 0 0 128 0a8 8 0 0 1 16 0a80.11 80.11 0 0 1-72 79.6Z"
+              />
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   );

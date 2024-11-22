@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../lib/prisma';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -13,6 +14,8 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const transcription = formData.get('lastTranscription') as string;
+    const resumeId = formData.get('resumeId') as string;
+    const jobId = formData.get('jobId') as string;
 
     if (!transcription) {
       return NextResponse.json(
@@ -21,8 +24,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process the transcription with GPT-4
-    console.log('Processing transcription:', transcription);
+    // Fetch resume and job description from database
+    const [resume, job] = await Promise.all([
+      prisma.document.findUnique({
+        where: { id: resumeId },
+        select: { content: true }
+      }),
+      prisma.document.findUnique({
+        where: { id: jobId },
+        select: { content: true }
+      })
+    ]);
+
+    if (!resume?.content || !job?.content) {
+      return NextResponse.json(
+        { error: 'Could not find selected documents' },
+        { status: 400 }
+      );
+    }
+
+    // Process the transcription with GPT-3.5
+    console.log('Processing transcription:', {
+      transcription,
+      resumeId,
+      jobId
+    });
 
     const llmResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -31,22 +57,40 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Using GPT-3.5 for faster responses
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: `You are a concise interview coach. Provide brief, actionable feedback for interview responses. For questions, give a short answer outline. Keep responses under 100 words. If input isn't a question or doesn't need feedback, respond with an empty string.`
+            content: `You are an expert interview coach providing real-time assistance. 
+            You have access to the candidate's resume and the job description.
+
+            Resume:
+            ${resume.content}
+
+            Job Description:
+            ${job.content}
+
+            Your role is to:
+            1. Analyze interview questions in the context of the resume and job description
+            2. Provide concise, tailored responses that:
+               - Address the question directly
+               - Highlight relevant experience from the resume
+               - Connect skills to job requirements
+               - Use STAR method when appropriate
+            3. Keep responses focused and under 100 words
+            
+            If the input isn't a question or doesn't need feedback, respond with an empty string.`
           },
           {
             role: 'user',
             content: transcription.trim()
           }
         ],
-        temperature: 0.5, // Lower temperature for more focused responses
-        max_tokens: 150,  // Reduced token limit
+        temperature: 0.5,
+        max_tokens: 150,
         presence_penalty: 0.0,
         frequency_penalty: 0.0,
-        stream: true // Enable streaming
+        stream: true
       })
     });
 
