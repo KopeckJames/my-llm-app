@@ -13,7 +13,7 @@ export function Navigation() {
 
   const navItems = [
     {
-      path: '/',
+      path: '/chat',
       label: 'Chat',
       icon: <MessageSquare className="w-4 h-4" />
     },

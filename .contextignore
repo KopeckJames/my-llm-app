@@ -1,0 +1,48 @@
+# Ignore duplicate configuration files
+my-llm-app/
+
+# Ignore generated files
+*.log
+.next/
+node_modules/
+dist/
+build/
+
+# Ignore environment files
+.env*
+!.env.example
+
+# Ignore cache files
+.cache/
+
+# Ignore temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Ignore test files
+*.test.*
+*.spec.*
+
+# Ignore backup files
+*.bak
+*~
+
+# Ignore duplicate directories
+my-llm-app/src/
+my-llm-app/public/
+my-llm-app/prisma/
+
+# Ignore duplicate config files
+my-llm-app/next.config.ts
+my-llm-app/package.json
+my-llm-app/tsconfig.json
+
+# Ignore old structure
+src/components/
+src/hooks/
+src/lib/
+src/services/
+src/store/
+src/types/
+src/utils/

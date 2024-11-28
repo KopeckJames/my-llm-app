@@ -80,70 +80,61 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto">
-      <Card className="flex-grow flex flex-col h-full">
-        <CardHeader className="flex flex-row items-center space-x-4 pb-4">
-          <MessageCircle className="w-8 h-8" />
-          <div className="flex-1">
-            <CardTitle>Chat Interface</CardTitle>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setMessages([])}
-            title="Clear chat"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-          <SettingsDialog />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => signOut()}
-          >
-            Sign Out
-          </Button>
-        </CardHeader>
-        
-        <CardContent className="flex-grow flex flex-col space-y-4 overflow-hidden">
-          <div className="flex-grow overflow-y-auto space-y-4 p-4">
-            {messages.map((message, index) => (
+    <Card className="flex flex-col h-[calc(100vh-8rem)]">
+      <CardHeader className="flex flex-row items-center space-x-4 pb-4 shrink-0">
+        <MessageCircle className="w-8 h-8" />
+        <div className="flex-1">
+          <CardTitle>Chat Interface</CardTitle>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => setMessages([])}
+          title="Clear chat"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+        <SettingsDialog />
+      </CardHeader>
+      
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              }`}
+            >
               <div
-                key={index}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                className={`max-w-[80%] rounded-lg p-4 ${
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800'
                 }`}
               >
-                <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    message.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  {message.content}
-                </div>
+                {message.content}
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          
-          <form onSubmit={handleSubmit} className="flex space-x-2 pt-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-grow"
-              disabled={isLoading}
-            />
-            <Button type="submit" disabled={isLoading}>
-              <Send className="w-4 h-4 mr-2" />
-              {isLoading ? 'Sending...' : 'Send'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        <form onSubmit={handleSubmit} className="flex space-x-2 pt-4 mt-auto">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-grow"
+            disabled={isLoading}
+          />
+          <Button type="submit" disabled={isLoading}>
+            <Send className="w-4 h-4 mr-2" />
+            {isLoading ? 'Sending...' : 'Send'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

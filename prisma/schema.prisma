@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  name          String?
-  documents     Document[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String?
+  documents       Document[]
+  jobApplications JobApplication[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Document {
@@ -27,6 +28,26 @@ model Document {
   uploadedAt  DateTime  @default(now())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model JobApplication {
+  id                 String     @id @default(uuid())
+  userId             String
+  user               User       @relation(fields: [userId], references: [id])
+  dateOfApplication  DateTime
+  company            String
+  jobDescription     String
+  resumeUsed         String
+  referenceOrReferral String
+  status             String
+  nextInterviewDate  DateTime?
+  salary             Json?
+  location           Json
+  notes              String
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@index([userId])
 }
