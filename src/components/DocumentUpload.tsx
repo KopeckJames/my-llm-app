@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Upload, FileText } from 'lucide-react';
+import { Upload, FileText, Briefcase } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { DocumentType } from '@/types/document';
 
 export function DocumentUpload() {
@@ -71,33 +72,51 @@ export function DocumentUpload() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <Select
-            value={docType}
-            onValueChange={(value: DocumentType) => setDocType(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select document type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="resume">Resume</SelectItem>
-              <SelectItem value="job_description">Job Description</SelectItem>
-            </SelectContent>
-          </Select>
+        <Tabs defaultValue="resume" onValueChange={(value) => setDocType(value as DocumentType)} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="resume" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Resume
+            </TabsTrigger>
+            <TabsTrigger value="job_description" className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4" />
+              Job Description
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="resume">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Upload your resume in PDF, DOC, DOCX, or TXT format.
+              </p>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="job_description">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Upload a job description to compare with your resume.
+              </p>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx,.txt"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-            />
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            Supported formats: PDF, DOC, DOCX, TXT
-          </div>
+        <div className="mt-4 text-sm text-muted-foreground">
+          Supported formats: PDF, DOC, DOCX, TXT
         </div>
       </CardContent>
     </Card>
