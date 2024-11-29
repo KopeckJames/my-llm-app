@@ -4,6 +4,9 @@ const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'], // For Google OAuth profile pictures
   },
+  experimental: {
+    scrollRestoration: true
+  },
   headers: async () => {
     return [
       {
@@ -37,14 +40,9 @@ const nextConfig = {
       }
     ];
   },
-  // Optimize for production
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-  },
-  // Enable progressive web app features
-  experimental: {
-    scrollRestoration: true,
-  },
+  }
 };
 
 export default nextConfig;

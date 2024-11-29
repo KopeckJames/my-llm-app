@@ -7,5 +7,9 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/chat/:path*", "/api/chat/:path*"],
+  matcher: [
+    "/chat/:path*", 
+    "/api/chat/:path*",
+    "/api/documents/:path*"  // Add this line
+  ],
 };

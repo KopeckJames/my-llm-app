@@ -164,12 +164,3 @@ const JobApplicationForm = () => {
 };
 
 export default JobApplicationForm;
-
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Saving..." : "Save Application"}
-      </Button>
-    </form>
-  );
-};
-
-export default JobApplicationForm;
